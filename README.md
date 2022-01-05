@@ -41,3 +41,6 @@ gin server
 ./run.sh -up gin
 ```
 
+## Git flow
+
+![image](https://user-images.githubusercontent.com/73640793/148233964-ad7d4df7-e1a8-4546-9c5a-4a1b00e4ed12.png)
