@@ -11,6 +11,9 @@ case "$cmd" in
 			if [ $opt == "dev" ]  
 			then
 				npm run dev
+			elif [ $opt == "init" ]
+			then
+				npm run start
 			else 
 				npm run deploy
 			fi
@@ -21,6 +24,9 @@ case "$cmd" in
 			if [ $opt == "dev" ]  
 			then
 				go run main.go dev
+			elif [ $opt == "init" ]
+			then
+				go run main.go init 
 			else 
 				go run main.go
 			fi
