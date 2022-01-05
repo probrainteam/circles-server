@@ -6,7 +6,7 @@
   "scripts": {
     "start": "ts-node-dev --inspect --watch -- ./src/app.ts",
     "dev" : "npm install & nodemon --exec ts-node -e ts,tsx,js,json ./src/app.ts",
-    "hi" : "npx tsc & nodemon --exec ts-node dist/app.js"
+    "deploy" : "npx tsc & nodemon --exec ts-node dist/app.js"
   },
   "keywords": [],
   "author": "",
