@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+
+  mariadb:
+    image: mariadb:10.4.6
+    container_name: "${name}"
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "${rootpw}"
+      TZ: Asia/Seoul
+    volumes:
+     - ./db_volumes:/var/lib/mysql
+    ports:
+     - '4123:3306'
+    command:
+      - --character-set-server=utf8mb4 
+      - --collation-server=utf8mb4_general_ci
+  
+  redis:
+      image: redis:alpine
+      command: redis-server --port 6379
+      container_name: redis_boot
+      hostname: redis_boot
+      labels:
+        - "name=redis"
+        - "mode=standalone"
+      ports:
+        - 4124:6379
