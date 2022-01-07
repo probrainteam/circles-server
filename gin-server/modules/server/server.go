@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	_ "circlesServer/modules/storage"
-	"circlesServer/modules/token"
+	. "circlesServer/modules/storage"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,7 +13,8 @@ const port = ":4000"
 
 func Serve(mode int) { // local : 4000 호스팅 시작
 	r := gin.Default()
-	if err := token.RedisInit(); err != nil {
+	_, err := Redis()
+	if err != nil {
 		panic(fmt.Errorf("fatal error : redis is off status"))
 	}
 	api := r.Group("/api")
