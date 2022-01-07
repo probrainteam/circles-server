@@ -8,34 +8,31 @@ case "$cmd" in
 	case "$where" in
 		express)
 			cd express-server
-			if [ $opt == "dev" ]  
-			then
-				npm run dev
-			elif [ $opt == "init" ]
-			then
-				npm run start
-			else 
-				npm run deploy
-			fi
+			npm run $opt
 			;;
 				
 		gin)
 			cd gin-server 
-			if [ $opt == "dev" ]  
-			then
-				go run main.go dev
-			elif [ $opt == "init" ]
-			then
-				go run main.go init 
-			else 
-				go run main.go
-			fi
+			go run main.go $opt
 			;;
 
 		*)
 		echo "'$where' is unknown server"
 		;;
 	esac
+	;;
+	-reset)
+	if [ "$where" == "" ] && [ "$opt" == "" ] ; then
+		docker compose down -v
+		rm -rf db/data/
+	else
+			echo "'$where' and '$opt'"
+
+	fi
+	echo "gdgd"
+	;;
+	-init)
+		docker compose up
 	;;
 	*)
 	echo "'$cmd' is unknown command"
