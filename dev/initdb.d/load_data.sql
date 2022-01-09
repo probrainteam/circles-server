@@ -1,0 +1,1 @@
+-- LOAD DATA INFILE '/Users/macbook/circles-server/db/initdb.d/manager.csv' INTO TABLE manage.manager FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS;
