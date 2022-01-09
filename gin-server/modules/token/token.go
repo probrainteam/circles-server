@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -37,30 +36,16 @@ var client *redis.Client
 var ACCESS_SECRET string
 var REFRESH_SECRET string
 
-func RedisInit() error {
-	//Initializing redis
-	dsn := os.Getenv("REDIS_DSN")
-	if len(dsn) == 0 {
-		dsn = "localhost:6379"
-	}
-	client = redis.NewClient(&redis.Options{
-		Addr: dsn, //redis port
-	})
-	_, err := client.Ping().Result()
-	if err != nil {
-		return err
-	}
+func init() {
 	viper.SetConfigName("config")
-	viper.AddConfigPath(".")   // optionally look for config in the working directory
-	err = viper.ReadInConfig() // Find and read the config file
-	if err != nil {            // Handle errors reading the config file
+	viper.AddConfigPath(".")    // optionally look for config in the working directory
+	err := viper.ReadInConfig() // Find and read the config file
+	if err != nil {             // Handle errors reading the config file
 		panic(fmt.Errorf("Fatal error config file: %w \n", err))
 	}
 	ACCESS_SECRET = viper.GetString(`token.ACCESS_SECRET`)
 	REFRESH_SECRET = viper.GetString(`token.REFRESH_SECRET`)
-	return nil
 }
-
 func ExtractToken(r *http.Request) []string {
 	bearToken := r.Header.Get("Authorization")
 	strArr := strings.Split(bearToken, " ")
