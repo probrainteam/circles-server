@@ -6,7 +6,7 @@ CREATE TABLE manager (
     PRIMARY KEY (circle)
 );
 CREATE TABLE circle (
-    `student_id` INT         NOT NULL,
+    `student_id` VARCHAR(12)  NOT NULL,
     `circle`     INT          NOT NULL,
     `major`      VARCHAR(12)  NOT NULL,
     `name`       BLOB         NOT NULL,
