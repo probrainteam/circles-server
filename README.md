@@ -11,16 +11,24 @@
 
 ## Initialization
 
-express server
+Real DB
 ```
-./run.sh -up express init
+./run.sh -init
 ```
-gin server
+Mock DB
 ```
-./run.sh -up gin init
+./run.sh -init dev
 ```
-
-## Develop env
+## Reset 
+Real DB
+```
+./run.sh -reset
+```
+Mock DB
+```
+./run.sh -reset dev
+```
+## Develop run
 express server
 ```
 ./run.sh -up express dev
