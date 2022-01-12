@@ -1,6 +1,7 @@
 package storage
 
 import (
+	. "circlesServer/modules/reader"
 	"database/sql"
 	"fmt"
 
@@ -10,8 +11,8 @@ import (
 var db *sql.DB
 
 func init() {
-	DB, err := sql.Open("mysql", "root:toor@tcp(localhost:4123)/CSE")
-	// key
+	path := GetConfig(`db.ID`) + ":" + GetConfig(`db.PW`) + "@tcp(localhost:" + GetConfig(`db.PORT`) + ")/" + GetConfig(`db.DB`)
+	DB, err := sql.Open("mysql", path)
 	if err != nil {
 		panic(err)
 	}

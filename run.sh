@@ -14,7 +14,7 @@ case "$cmd" in
 			cd gin-server 
 			if [ "$3" == "dev" ] 
 			then
-				gin run main.go $3
+				go run main.go $3
 			fi
 			;;
 		*)

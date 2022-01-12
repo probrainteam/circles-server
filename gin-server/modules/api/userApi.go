@@ -58,20 +58,21 @@ func LoginUser(c *gin.Context) (uint64, map[string]string, error) {
 	}
 	db := storage.DB()
 	var pw string
-	row := db.QueryRow(`your query or GORM`)
-	var uid uint64
-	err = row.Scan(&uid, &pw)
+	var id uint64
+	row := db.QueryRow(`select id, pw from manager`)
+	err = row.Scan(&id, &pw)
+	fmt.Println(id, pw)
 	if err := ErrChecker.Check(err); err != nil {
 		return 0, map[string]string{}, errors.New("ID")
 	}
 	if reqBody.PW != pw { // PW 가 다르면 PW 가 다르다는 오류 반환
 		return 0, map[string]string{}, errors.New("PW")
 	}
-	ts, err := token.CreateToken(uid)
+	ts, err := token.CreateToken(id)
 	if err := ErrChecker.Check(err); err != nil {
 		return 0, map[string]string{}, err
 	}
-	err = token.CreateAuth(uid, ts) // Redis 토큰 메타데이터 저장
+	err = token.CreateAuth(id, ts) // Redis 토큰 메타데이터 저장
 	if err := ErrChecker.Check(err); err != nil {
 		return 0, map[string]string{}, err
 	}
@@ -79,7 +80,7 @@ func LoginUser(c *gin.Context) (uint64, map[string]string, error) {
 		"access_token":  ts.AccessToken,
 		"refresh_token": ts.RefreshToken,
 	}
-	return uid, tokens, nil
+	return id, tokens, nil
 }
 func LogoutUser(c *gin.Context) error {
 	// request header 에 담긴 access & refresh token을 검증 후 redis 에서 삭제
