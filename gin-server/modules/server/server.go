@@ -11,16 +11,21 @@ import (
 
 const port = ":4000"
 
-func Serve(mode int) { // local : 4000 호스팅 시작
+func Serve(mode string) { // local : 4000 호스팅 시작
 	r := gin.Default()
 	_, err := Redis()
 	if err != nil {
 		panic(fmt.Errorf("fatal error : redis is off status"))
 	}
 	api := r.Group("/api")
-	if mode == 1 {
+	if mode == `deploy` {
+	} else if mode == `dev` { // use mock data
 		api.Use(dummy)
+	} else if mode == `debug` { // log everything
+	} else {
+		panic(fmt.Errorf(`Unknown command : ` + mode)) // exception
 	}
+
 	RegisterApiHandlers(api)
 	r.Run(port)
 }

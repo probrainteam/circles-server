@@ -12,10 +12,7 @@ case "$cmd" in
 			;;
 		gin)
 			cd gin-server 
-			if [ "$3" == "dev" ] 
-			then
-				go run main.go $3
-			fi
+			go run main.go $3
 			;;
 		*)
 		echo "'$2' is unknown server"
