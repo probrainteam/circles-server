@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"fmt"
+	"log"
 	"math/rand"
 	"net/smtp"
 	"strconv"
@@ -30,6 +31,26 @@ func init() {
 	gmail = viper.GetString(`gmail.ID`)
 	gmailPW = viper.GetString(`gmail.PW`)
 }
+func TestGetAllTable(c *gin.Context, table string) error {
+	db := storage.DB()
+	rows, err := db.Query("SELECT * FROM " + table)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close() //반드시 닫는다 (지연하여 닫기)
+	var first string
+	var second string
+	var t string
+	var q string
+	for rows.Next() {
+		err := rows.Scan(&first, &second, &t, &q)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(first, second, t, q)
+	}
+	return nil
+}
 func RegisterUser(c *gin.Context) error {
 	var reqBody ResgisterForm
 	err := c.ShouldBindJSON(&reqBody)
@@ -50,37 +71,39 @@ func RegisterUser(c *gin.Context) error {
 	return nil
 }
 
-func LoginUser(c *gin.Context) (uint64, map[string]string, error) {
+func LoginUser(c *gin.Context) (map[string]string, error) {
 	var reqBody LoginForm
 	err := c.ShouldBindJSON(&reqBody)
 	if err := ErrChecker.Check(err); err != nil {
-		return 0, map[string]string{}, err
+		return map[string]string{}, err
 	}
 	db := storage.DB()
 	var pw string
-	var id uint64
-	row := db.QueryRow(`select id, pw from manager`)
-	err = row.Scan(&id, &pw)
-	fmt.Println(id, pw)
+	var count int
+	var circle uint64
+	row := db.QueryRow(`select count(*), pw, circle from manager where email = '` + reqBody.ID + `'`)
+	err = row.Scan(&count, &pw, &circle)
+	fmt.Println(reqBody.ID, count, pw, reqBody.PW)
 	if err := ErrChecker.Check(err); err != nil {
-		return 0, map[string]string{}, errors.New("ID")
+		return map[string]string{}, errors.New("ID")
 	}
 	if reqBody.PW != pw { // PW 가 다르면 PW 가 다르다는 오류 반환
-		return 0, map[string]string{}, errors.New("PW")
+		return map[string]string{}, errors.New("PW")
 	}
-	ts, err := token.CreateToken(id)
+	ts, err := token.CreateToken(circle)
 	if err := ErrChecker.Check(err); err != nil {
-		return 0, map[string]string{}, err
+		return map[string]string{}, err
 	}
-	err = token.CreateAuth(id, ts) // Redis 토큰 메타데이터 저장
+	err = token.CreateAuth(circle, ts) // Redis 토큰 메타데이터 저장
 	if err := ErrChecker.Check(err); err != nil {
-		return 0, map[string]string{}, err
+		return map[string]string{}, err
 	}
 	tokens := map[string]string{
 		"access_token":  ts.AccessToken,
 		"refresh_token": ts.RefreshToken,
 	}
-	return id, tokens, nil
+	defer db.Close()
+	return tokens, nil
 }
 func LogoutUser(c *gin.Context) error {
 	// request header 에 담긴 access & refresh token을 검증 후 redis 에서 삭제
