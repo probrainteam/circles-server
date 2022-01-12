@@ -1,15 +1,14 @@
 package api
 
 import (
+	ErrChecker "circlesServer/modules/errors"
+	. "circlesServer/modules/storage"
 	"errors"
 	"io"
 	"log"
 	"net"
 	"os"
 	"strconv"
-
-	ErrChecker "circlesServer/modules/errors"
-	"circlesServer/modules/storage"
 
 	"github.com/gin-gonic/gin"
 )
@@ -26,7 +25,7 @@ func getAddr() string {
 	return localAddr.IP.String()
 }
 func GetMemberList(c *gin.Context) ([]Project, error) {
-	db := storage.DB()
+	db := DB()
 	var length int
 	_ = db.QueryRow(`your query or GORM`).Scan(&length)
 	if length == 0 {
@@ -60,7 +59,7 @@ func AddMember(c *gin.Context) (int, error) {
 	file, _, err := c.Request.FormFile("content")
 
 	var pid int
-	db := storage.DB()
+	db := DB()
 	db.QueryRow(`your query or GORM`)
 	basePath := "http://" + getAddr()
 	localPath := "/Users/macbook/Sites" // custom
@@ -100,7 +99,7 @@ func Deny(c *gin.Context) error {
 	if err := ErrChecker.Check(err); err != nil {
 		return err
 	}
-	db := storage.DB()
+	db := DB()
 	var count int
 	_ = db.QueryRow(`your query or GORM`).Scan(&count)
 	if count == 0 {
@@ -119,7 +118,7 @@ func Permit(c *gin.Context) error {
 	if err := ErrChecker.Check(err); err != nil {
 		return err
 	}
-	db := storage.DB()
+	db := DB()
 	var count int
 	_ = db.QueryRow(`your query or GORM`)
 	if count == 0 {
@@ -138,7 +137,7 @@ func Join(c *gin.Context) ([]member, error) {
 	if err := ErrChecker.Check(err); err != nil {
 		return []member{}, err
 	}
-	db := storage.DB()
+	db := DB()
 	_, err = db.Exec(`your query or GORM`)
 	if err != nil {
 		return []member{}, err
@@ -152,7 +151,7 @@ func GetNumProject(c *gin.Context) (int, error) {
 	if err := ErrChecker.Check(err); err != nil {
 		return -1, err
 	}
-	db := storage.DB()
+	db := DB()
 	_, err = db.Exec(`your query or GORM`)
 	if err != nil {
 		return -1, err

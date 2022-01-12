@@ -1,6 +1,7 @@
 package token
 
 import (
+	. "circlesServer/modules/storage"
 	"errors"
 	"fmt"
 	"net/http"
@@ -131,6 +132,11 @@ func ExtractBothTokenMetadata(r *http.Request) (*AccessDetails, *RefreshDetails,
 }
 
 func FetchAuth(authD *AccessDetails) (uint64, error) {
+	client, err := Redis()
+	if err != nil {
+		return 0, err
+	}
+	defer client.Close()
 	userid, err := client.Get(authD.AccessUuid).Result()
 	if err != nil {
 		return 0, err
@@ -179,7 +185,11 @@ func CreateAuth(userid uint64, td *TokenDetails) error {
 	at := time.Unix(td.AtExpires, 0) //converting Unix to UTC
 	rt := time.Unix(td.RtExpires, 0)
 	now := time.Now()
-
+	client, err := Redis()
+	if err != nil {
+		return err
+	}
+	defer client.Close()
 	errAccess := client.Set(td.AccessUuid, strconv.Itoa(int(userid)), at.Sub(now)).Err()
 	if errAccess != nil {
 		return errAccess
@@ -191,6 +201,11 @@ func CreateAuth(userid uint64, td *TokenDetails) error {
 	return nil
 }
 func DeleteAuth(accessUuid string, refreshUuid string) (int64, error) {
+	client, err := Redis()
+	if err != nil {
+		return 0, err
+	}
+	defer client.Close()
 	deleted, err := client.Del(accessUuid, refreshUuid).Result()
 	if err != nil {
 		return 0, err

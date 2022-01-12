@@ -7,11 +7,11 @@ import (
 )
 
 func getLogin(c *gin.Context) {
-	uid, token, err := LoginUser(c)
+	token, err := LoginUser(c)
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 	} else {
-		c.JSON(200, gin.H{"error": nil, "token": token, "uid": uid})
+		c.JSON(200, gin.H{"error": nil, "token": token})
 	}
 }
 func postModifyPW(c *gin.Context) {
