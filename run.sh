@@ -21,17 +21,20 @@ case "$cmd" in
 	;;
 	-reset) # DB reset
 		if [ "$3" == "" ] ; then
+				docker exec -it Probrain_redis redis-cli flushall
 			if [ "$2" == "dev" ] ; then	# rm dev db volumn
 				docker compose down dev_db redis -v
 				rm -rf dev/data/
 			elif [ "$2" == "" ]; then # rm real db volumn
 				docker compose down db redis -v
 				rm -rf db/data/
+				
 			fi
 		else
 				echo "'$2' and '$3'"
 
 		fi
+
 	;;
 	-init) # DB, redis compose up
 		if [ "$2" == "dev" ] ; then # dev, mock dummy db 
