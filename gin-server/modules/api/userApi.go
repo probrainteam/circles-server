@@ -83,7 +83,6 @@ func LoginUser(c *gin.Context) (map[string]string, error) {
 	var circle uint64
 	row := db.QueryRow(`select count(*), pw, circle from manager where email = '` + reqBody.ID + `'`)
 	err = row.Scan(&count, &pw, &circle)
-	fmt.Println(reqBody.ID, count, pw, reqBody.PW)
 	if err := ErrChecker.Check(err); err != nil {
 		return map[string]string{}, errors.New("ID")
 	}
