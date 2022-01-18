@@ -15,8 +15,8 @@ var port string = `:` + GetConfig(`server.PORT`)
 
 func Serve(mode string) { // local : 4000 호스팅 시작
 	r := gin.Default()
-	publicAPI := r.Group("/api")    // no need auth
-	authAPI := r.Group("/auth/api") // need auth
+	publicAPI := r.Group("/api") // no need auth
+	authAPI := r.Group("/api")   // need auth
 	if mode == `deploy` {
 		authAPI.Use(dummy)
 	} else if mode == `dev` { // use mock data
