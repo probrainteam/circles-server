@@ -28,13 +28,10 @@ func getAddr() string {
 
 func getCircleNum(c *gin.Context) (uint64, error) {
 	access := strings.Split(c.Request.Header.Get("Authorization"), " ")[1]
-	fmt.Println(access)
 	claims := jwt.MapClaims{}
-	token, _ := jwt.ParseWithClaims(access, claims, func(token *jwt.Token) (interface{}, error) {
+	_, _ = jwt.ParseWithClaims(access, claims, func(token *jwt.Token) (interface{}, error) {
 		return []byte(GetConfig(`token.ACCESS_SECRET`)), nil
 	})
-
-	fmt.Println(token)
 	for key, val := range claims {
 		fmt.Printf("Key: %v, value: %v\n", key, val)
 	}
