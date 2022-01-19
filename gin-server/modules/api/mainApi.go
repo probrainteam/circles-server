@@ -4,34 +4,18 @@ import (
 	ErrChecker "circlesServer/modules/errors"
 	. "circlesServer/modules/storage"
 	"errors"
-	"io"
-	"log"
-	"net"
-	"os"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-func getAddr() string {
-	conn, err := net.Dial("udp", "8.8.8.8:80")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer conn.Close()
-
-	localAddr := conn.LocalAddr().(*net.UDPAddr)
-
-	return localAddr.IP.String()
-}
 func GetMemberList(c *gin.Context) ([]Member, error) {
-	db := DB()
-	var length int
-	_ = db.QueryRow(`select count(*) from probrain`).Scan(&length)
-	if length == 0 {
-		return []Member{}, errors.New("Nothing to show")
+	num, err := getCircleNum(c)
+	if err != nil {
+		return []Member{}, err
 	}
-	rows, err := db.Query(`select * from probrain`)
+	circle := getCircle(num)
+	db := DB()
+	rows, err := db.Query(`select * from ` + circle)
 	if err := ErrChecker.Check(err); err != nil {
 		return []Member{}, err
 	}
@@ -46,6 +30,9 @@ func GetMemberList(c *gin.Context) ([]Member, error) {
 		}
 		Members = append(Members, mem)
 	}
+	if len(Members) == 0 {
+		return []Member{}, errors.New("nothing to show")
+	}
 	return Members, nil
 }
 func AddMember(c *gin.Context) (int, error) {
@@ -56,42 +43,38 @@ func AddMember(c *gin.Context) (int, error) {
 		return 1, err
 	}
 
-	file, _, err := c.Request.FormFile("content")
+	// file, _, err := c.Request.FormFile("content")
 
-	var pid int
+	// var pid int
 	db := DB()
-	db.QueryRow(`your query or GORM`)
-	basePath := "http://" + getAddr()
-	localPath := "/Users/macbook/Sites" // custom
-	dirPath := "/Member_img/"           // custom
-	path := basePath + dirPath + strconv.Itoa(pid+1) + `.png`
+	// basePath := "http://" + getAddr()
+	// localPath := "/Users/macbook/Sites" // custom
+	// dirPath := "/Member_img/"           // custom
+	// path := basePath + dirPath + strconv.Itoa(pid+1) + `.png`
 
-	if err != nil {
-		return -1, err
-	}
-	_, err = db.Exec(`your query or GORM`)
+	_, err = db.Exec(`insert into `)
 	if err := ErrChecker.Check(err); err != nil {
 		return -1, err
 	}
 
-	path = localPath + dirPath + strconv.Itoa(pid+1) + `.png`
-	dst, err := os.Create(path)
-	if err != nil {
-		return -1, err
-	}
-	defer dst.Close()
+	// path = localPath + dirPath + strconv.Itoa(pid+1) + `.png`
+	// dst, err := os.Create(path)
+	// if err != nil {
+	// 	return -1, err
+	// }
+	// defer dst.Close()
 
 	if err != nil {
 		return -1, err
 	}
-	if _, err := io.Copy(dst, file); err != nil {
-		return -1, err
-	}
+	// if _, err := io.Copy(dst, file); err != nil {
+	// 	return -1, err
+	// }
 	_, err = db.Exec(`your query or GORM`)
 	if err := ErrChecker.Check(err); err != nil {
 		return -1, err
 	}
-	return pid, nil
+	return 0, nil
 }
 func Deny(c *gin.Context) error {
 	var reqBody ReplyJoinForm

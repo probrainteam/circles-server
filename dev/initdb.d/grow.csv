@@ -1,0 +1,3 @@
+student_id,major,name,year,email,phone,paid,status
+"201701001","기공","A",3,"aaamail@gmail.com","01012341234",1,1
+"201902083","컴공","B",3,"bbbmail@gmail.com","01099992222",0,0
