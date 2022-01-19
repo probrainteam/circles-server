@@ -1,8 +1,11 @@
 package token
 
 import (
+	. "circlesServer/modules/reader"
+	. "circlesServer/modules/storage"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -10,7 +13,6 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/go-redis/redis"
-	"github.com/spf13/viper"
 	"github.com/twinj/uuid"
 )
 
@@ -37,14 +39,8 @@ var ACCESS_SECRET string
 var REFRESH_SECRET string
 
 func init() {
-	viper.SetConfigName("config")
-	viper.AddConfigPath(".")    // optionally look for config in the working directory
-	err := viper.ReadInConfig() // Find and read the config file
-	if err != nil {             // Handle errors reading the config file
-		panic(fmt.Errorf("Fatal error config file: %w \n", err))
-	}
-	ACCESS_SECRET = viper.GetString(`token.ACCESS_SECRET`)
-	REFRESH_SECRET = viper.GetString(`token.REFRESH_SECRET`)
+	ACCESS_SECRET = GetConfig(`token.ACCESS_SECRET`)
+	REFRESH_SECRET = GetConfig(`token.REFRESH_SECRET`)
 }
 func ExtractToken(r *http.Request) []string {
 	bearToken := r.Header.Get("Authorization")
@@ -130,14 +126,19 @@ func ExtractBothTokenMetadata(r *http.Request) (*AccessDetails, *RefreshDetails,
 	return nil, nil, err
 }
 
-func FetchAuth(authD *AccessDetails) (uint64, error) {
-	userid, err := client.Get(authD.AccessUuid).Result()
+func FetchAuth(at *AccessDetails) (uint64, error) {
+	client, err := Redis()
+	if err != nil {
+		return 0, err
+	}
+	defer client.Close()
+	userid, err := client.Get(at.AccessUuid).Result()
 	if err != nil {
 		return 0, err
 	}
 
 	userID, _ := strconv.ParseUint(userid, 10, 64)
-	if authD.UserId != userID {
+	if at.UserId != userID {
 		return 0, errors.New("unauthorized")
 	}
 	return userID, nil
@@ -179,7 +180,11 @@ func CreateAuth(userid uint64, td *TokenDetails) error {
 	at := time.Unix(td.AtExpires, 0) //converting Unix to UTC
 	rt := time.Unix(td.RtExpires, 0)
 	now := time.Now()
-
+	client, err := Redis()
+	if err != nil {
+		return err
+	}
+	defer client.Close()
 	errAccess := client.Set(td.AccessUuid, strconv.Itoa(int(userid)), at.Sub(now)).Err()
 	if errAccess != nil {
 		return errAccess
@@ -191,6 +196,11 @@ func CreateAuth(userid uint64, td *TokenDetails) error {
 	return nil
 }
 func DeleteAuth(accessUuid string, refreshUuid string) (int64, error) {
+	client, err := Redis()
+	if err != nil {
+		return 0, err
+	}
+	defer client.Close()
 	deleted, err := client.Del(accessUuid, refreshUuid).Result()
 	if err != nil {
 		return 0, err
@@ -198,19 +208,64 @@ func DeleteAuth(accessUuid string, refreshUuid string) (int64, error) {
 	return deleted, nil
 }
 
-func CheckTokenAuth(r *http.Request) error {
+func CheckTokenAuth(r *http.Request) (bool, error) { // access token의 만료 여부 체크
+	au, _, err := ExtractBothTokenMetadata(r)
+	if err != nil {
+		return false, err
+	}
 	// request 의 Access 토큰을 추출
+	valid, err := checkTokenAlive(au.AccessUuid)
+	if err != nil {
+		return false, err
+	}
 	// CheckAccessToken() 호출 : 추출한 AccessToken의 만료 여부를 검사
-	// 만료 -> Refresh Token 요청 후 CheckRefreshToken() 호출 : RefreshToken의 만료 여부를 검사
-	// Refresh 만료   -> createToken()으로 Access&Refresh 한 쌍 반환
-	// Refresh 만료 X -> createAccessToken()으로 AccessToken 반환
-	// 만료 X -> nil 반환
+	return valid, nil
+}
 
-	return nil
+// 후 CheckRefreshToken() 호출 : RefreshToken의 만료 여부를 검사
+// Refresh 만료   -> 강제 로그아웃 후 재로그인 요청
+// Refresh 만료 X -> ReissueAccessToken() : AccessToken 재발급
+func checkTokenAlive(uuid string) (bool, error) {
+	client, err := Redis()
+	if err != nil {
+		return false, err
+	}
+	defer client.Close()
+	_, err = client.Get(uuid).Result()
+	log.Println(client.Get(uuid).Result())
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
-func CheckAccessToken(r *http.Request) error {
-	return nil
-}
-func CheckRefreshToken(r *http.Request) error {
-	return nil
+func ReissueAccessToken(r *http.Request) (string, error) {
+	client, err := Redis()
+	if err != nil {
+		return "", err
+	}
+	defer client.Close()
+	// request token 파싱하여 userid get
+
+	var userid uint64 = 10000
+	td, err := CreateToken(userid)
+	at := time.Unix(td.AtExpires, 0) //converting Unix to UTC
+	now := time.Now()
+	errAccess := client.Set(td.AccessUuid, strconv.Itoa(int(userid)), at.Sub(now)).Err()
+	if errAccess != nil {
+		return "", errAccess
+	}
+
+	atClaims := jwt.MapClaims{}
+	atClaims["authorized"] = true
+	atClaims["access_uuid"] = td.AccessUuid
+	atClaims["user_id"] = userid
+	atClaims["exp"] = td.AtExpires
+	fmt.Println(atClaims)
+	att := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
+	td.AccessToken, err = att.SignedString([]byte(ACCESS_SECRET))
+	if err != nil {
+		return "", err
+	}
+
+	return td.AccessToken, nil
 }

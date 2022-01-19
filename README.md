@@ -11,16 +11,24 @@
 
 ## Initialization
 
-express server
+Real DB
 ```
-./run.sh -up express init
+./run.sh -init
 ```
-gin server
+Mock DB
 ```
-./run.sh -up gin init
+./run.sh -init dev
 ```
-
-## Develop env
+## Reset 
+Real DB
+```
+./run.sh -reset
+```
+Mock DB
+```
+./run.sh -reset dev
+```
+## Develop run
 express server
 ```
 ./run.sh -up express dev
@@ -43,4 +51,4 @@ gin server
 
 ## Git flow
 
-![image](https://user-images.githubusercontent.com/73640793/148233964-ad7d4df7-e1a8-4546-9c5a-4a1b00e4ed12.png)
+![image](https://user-images.githubusercontent.com/73640793/148528857-6462a17f-990b-426b-9537-6562efd52237.png)
