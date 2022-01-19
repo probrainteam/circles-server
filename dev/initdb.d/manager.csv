@@ -1,4 +1,4 @@
-email,pw,circle,pubkey
-"prob.dev.2022@gmail.com","thisishashedpw",0,"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDfD/gpkLZNAWhlNTCTj2eln8Aj+XlQc0jzgsdCs7znPKHcWw37I5KcNJnRSzqmGRfL/Lv2ervXY/FSMienilAex+1j8MFzIRLNSL8rcJAqhqEZf7ZsAy6SVxjQtLZdOZ/SxMNj/Moe2octpHAlx5+t6SPZgpuLR3TbV2dNJEIWNQIDAQAB"
-"argos@arg.os","hashasasas",1,"argospubkey"
-"grow@gr.ow","grgrgrhash",2,"growpubkey"
+email,pw,circle,pubkey,auth
+"prob.dev.2022@gmail.com","thisishashedpw",0,"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDfD/gpkLZNAWhlNTCTj2eln8Aj+XlQc0jzgsdCs7znPKHcWw37I5KcNJnRSzqmGRfL/Lv2ervXY/FSMienilAex+1j8MFzIRLNSL8rcJAqhqEZf7ZsAy6SVxjQtLZdOZ/SxMNj/Moe2octpHAlx5+t6SPZgpuLR3TbV2dNJEIWNQIDAQAB",0
+"argos@arg.os","hashasasas",1,"argospubkey",0
+"grow@gr.ow","grgrgrhash",2,"growpubkey",0
