@@ -59,32 +59,32 @@ func RegisterApiHandlers(api *gin.RouterGroup, auth *gin.RouterGroup) {
 	/*  Reply			200 -> token , uid
 	400 -> ID or PW incorrect
 	*/
-	api.POST("/account/login", getLogin)
+	api.POST("/user/login", getLogin)
 
 	/*  Reply			200 -> null
 	400 -> Modify fail
 	*/
-	api.PUT("/account/pw", postModifyPW)
+	api.PUT("/user/pw", putModifyPW)
 
 	/*  Reply			200 -> null ( mail send )
 	400 -> DB Conn or Query err
 	*/
-	api.POST("/account/pw", postFindPW)
+	api.POST("/user/pw", postFindPW)
 
 	/*  Reply			200 -> token delete
 	400 -> ID or PW incorrect
 	*/
-	auth.POST("/account/logout", postLogout)
+	auth.POST("/user/logout", postLogout)
 
 	/*  Reply			200 -> register success
 	400 -> DB Conn or Query err
 	*/
-	api.POST("/account", postRegister)
+	api.POST("/user", postRegister)
 
 	/*  Reply			200 -> id
 	400 -> DB Conn or Query err
 	*/
-	api.POST("/account/id", postFindID)
+	api.POST("/user/id", postFindID)
 
 	/*  Reply			200 -> List<post>
 	400 -> DB Conn or Query err
