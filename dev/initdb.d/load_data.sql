@@ -5,3 +5,17 @@ ENCLOSED BY '"'
 LINES TERMINATED BY '\n' 
 IGNORE 1 ROWS
 ;
+load data INFILE '/docker-entrypoint-initdb.d/probrain.csv' 
+INTO TABLE probrain
+FIELDS TERMINATED BY ',' 
+ENCLOSED BY '"' 
+LINES TERMINATED BY '\n' 
+IGNORE 1 ROWS
+;
+load data INFILE '/docker-entrypoint-initdb.d/grow.csv' 
+INTO TABLE grow
+FIELDS TERMINATED BY ',' 
+ENCLOSED BY '"' 
+LINES TERMINATED BY '\n' 
+IGNORE 1 ROWS
+;
