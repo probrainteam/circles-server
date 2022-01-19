@@ -1,6 +1,10 @@
 package api
 
 import (
+	ErrChecker "circlesServer/modules/errors"
+	. "circlesServer/modules/reader"
+	"circlesServer/modules/storage"
+	"circlesServer/modules/token"
 	"errors"
 	"fmt"
 	"log"
@@ -9,27 +13,15 @@ import (
 	"strconv"
 	"time"
 
-	ErrChecker "circlesServer/modules/errors"
-	"circlesServer/modules/storage"
-	"circlesServer/modules/token"
-
 	"github.com/gin-gonic/gin"
-	"github.com/spf13/viper"
 )
 
 var gmail string
 var gmailPW string
 
 func init() {
-	viper.SetConfigName("config")
-	viper.AddConfigPath(".")    // optionally look for config in the working directory
-	err := viper.ReadInConfig() // Find and read the config file
-	if err != nil {             // Handle errors reading the config file
-		panic(fmt.Errorf("Fatal error config file: %w \n", err))
-	}
-
-	gmail = viper.GetString(`gmail.ID`)
-	gmailPW = viper.GetString(`gmail.PW`)
+	gmail = GetConfig(`gmail.ID`)
+	gmailPW = GetConfig(`gmail.PW`)
 }
 func TestGetAllTable(c *gin.Context, table string) error {
 	db := storage.DB()
@@ -101,7 +93,6 @@ func LoginUser(c *gin.Context) (map[string]string, error) {
 		"access_token":  ts.AccessToken,
 		"refresh_token": ts.RefreshToken,
 	}
-	defer db.Close()
 	return tokens, nil
 }
 func LogoutUser(c *gin.Context) error {
@@ -118,23 +109,21 @@ func LogoutUser(c *gin.Context) error {
 }
 func FindUserPW(c *gin.Context) error {
 	var reqBody struct {
-		ID string `json:"email"`
+		EMAIL string `json:"email"`
 	}
 	err := c.ShouldBindJSON(&reqBody)
 	if err := ErrChecker.Check(err); err != nil {
 		return err
 	}
 	var email string
-	var name string
 	var count int
 	db := storage.DB()
-	row := db.QueryRow(`your query or GORM`)
-	err = row.Scan(&count, &email, &name)
+	err = db.QueryRow(`select count(*),email from manager where email = "`+reqBody.EMAIL+`"`).Scan(&count, &email)
 	if err := ErrChecker.Check(err); err != nil {
 		return err
 	}
 	if count == 0 {
-		return errors.New("Invalid id")
+		return errors.New("invalid email")
 	}
 	pwByte := []byte{}
 	for i := 0; i < 10; i++ {
@@ -146,18 +135,15 @@ func FindUserPW(c *gin.Context) error {
 		}
 	}
 	pw := string(pwByte)
-
-	_, err = db.Exec(`your query or GORM`)
+	_, err = db.Exec(`update manager set pw ="` + pw + `" where email = "` + reqBody.EMAIL + `"`)
 	if err := ErrChecker.Check(err); err != nil {
 		return err
 	}
-
 	auth := smtp.PlainAuth("", gmail, gmailPW, "smtp.gmail.com")
 	from := gmail
-	to := []string{reqBody.ID}
-	headerSubject := "Subject: 같이할래 임시 PW 발급\r\n"
+	to := []string{reqBody.EMAIL}
+	headerSubject := "Subject: 동아리 관리자 임시 PW 발급\r\n"
 	headerBlank := "\r\n"
-
 	body :=
 		`안녕하세요 
 	
@@ -165,7 +151,7 @@ func FindUserPW(c *gin.Context) error {
 
 동아리 회원관리 시스템을 이용해주셔서 감사합니다.
 
-` + name + `님의 임시 PW입니다.
+` + email + `님의 임시 PW입니다.
 
 PW:` + pw
 	msg := []byte(headerSubject + headerBlank + body)
@@ -200,7 +186,7 @@ func ModifyPW(c *gin.Context) error {
 	}
 	db := storage.DB()
 	var count int
-	uid := strconv.Itoa(reqBody.UID)
+	uid := strconv.Itoa(1)
 	_ = db.QueryRow(`your query or GORM` + uid).Scan(&count)
 	if count == 0 {
 		return errors.New("Invalid pw")
