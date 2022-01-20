@@ -51,12 +51,12 @@ func RegisterUser(c *gin.Context) error {
 	}
 	db := storage.DB()
 	var count int
-	_ = db.QueryRow(`your query or GORM`)
+	_ = db.QueryRow(`select count(*) from manager where email = "` + reqBody.Email + `"`).Scan(&count)
 
 	if count > 0 {
 		return errors.New("ID Duplicate")
 	}
-	_, err = db.Exec(`your query or GORM`)
+	_, err = db.Exec(`insert into manager (email, pw, pubkey) values (?,?,?)`, reqBody.Email, reqBody.PW, reqBody.PUBKEY)
 	if err := ErrChecker.Check(err); err != nil {
 		return err
 	}
@@ -197,7 +197,13 @@ func ModifyPW(c *gin.Context) error {
 	}
 	return nil
 }
-func ModifyProfile(c *gin.Context) error {
-
+func ModifyPubKey(c *gin.Context) error {
 	return nil
+}
+func ReissueAccess(c *gin.Context) (string, error) {
+	token, err := token.ReissueAccessToken(c.Request)
+	if err != nil {
+		return "", err
+	}
+	return token, nil
 }

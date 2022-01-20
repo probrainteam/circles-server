@@ -59,34 +59,39 @@ func RegisterApiHandlers(api *gin.RouterGroup, auth *gin.RouterGroup) {
 	/*  Reply			200 -> token , uid
 	400 -> ID or PW incorrect
 	*/
-	api.POST("/user/login", getLogin)
-
-	/*  Reply			200 -> null
-	400 -> Modify fail
-	*/
-	api.PUT("/user/pw", putModifyPW)
-
-	/*  Reply			200 -> null ( mail send )
-	400 -> DB Conn or Query err
-	*/
-	api.POST("/user/pw", postFindPW)
+	api.POST("/user/login", login)
 
 	/*  Reply			200 -> token delete
 	400 -> ID or PW incorrect
 	*/
-	auth.POST("/user/logout", postLogout)
+	auth.POST("/user/logout", logout)
+
+	/*  Reply			200 -> null
+	400 -> Modify fail
+	*/
+	api.PUT("/user/pubkey", modifyPubKey)
+
+	/*  Reply			200 -> null
+	400 -> Modify fail
+	*/
+	api.PUT("/user/pw", modifyPW)
+
+	/*  Reply			200 -> null ( mail send )
+	400 -> DB Conn or Query err
+	*/
+	api.POST("/user/pw", resetPW)
 
 	/*  Reply			200 -> register success
 	400 -> DB Conn or Query err
 	*/
-	api.POST("/user", postRegister)
+	api.POST("/user", register)
 
 	/*  Reply			200 -> id
 	400 -> DB Conn or Query err
 	*/
-	api.POST("/user/id", postFindID)
+	api.POST("/user/id", findID)
 
-	/*  Reply			200 -> List<post>
+	/*  Reply			200 -> List<member>
 	400 -> DB Conn or Query err
 	*/
 	auth.GET("/members", getMembers)
@@ -94,21 +99,23 @@ func RegisterApiHandlers(api *gin.RouterGroup, auth *gin.RouterGroup) {
 	/*  Reply			200 -> null
 	400 -> DB Conn or Query err
 	*/
-	auth.POST("/members/add", postAddMember)
+	auth.POST("/members/add", addMember)
 
 	/*  Reply			200 -> null
 	400 -> DB Conn or Query err
 	*/
-	auth.POST("/members/permit", postPermitJoin)
+	auth.POST("/members/permit", permitJoin)
 
 	/*  Reply			200 -> null
 	400 -> DB Conn or Query err
 	*/
-	auth.POST("/members/deny", postDenyJoin)
+	auth.POST("/members/deny", denyJoin)
 
-	/*  Reply			200 -> null
+	/*  Reply			200 -> List<member>
 	400 -> DB Conn or Query err
 	*/
 	auth.GET("/members/join", getJoin)
+
+	api.POST("/token", reissueAccess)
 
 }
