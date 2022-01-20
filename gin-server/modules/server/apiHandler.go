@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func getLogin(c *gin.Context) {
+func login(c *gin.Context) {
 	token, err := LoginUser(c)
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
@@ -14,15 +14,7 @@ func getLogin(c *gin.Context) {
 		c.JSON(200, gin.H{"error": nil, "token": token})
 	}
 }
-func putModifyPW(c *gin.Context) {
-	err := ModifyPW(c)
-	if err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
-	} else {
-		c.JSON(200, gin.H{"error": nil})
-	}
-}
-func postLogout(c *gin.Context) {
+func logout(c *gin.Context) {
 	err := LogoutUser(c)
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
@@ -30,15 +22,23 @@ func postLogout(c *gin.Context) {
 		c.JSON(200, gin.H{"error": nil})
 	}
 }
-func postRegister(c *gin.Context) {
-	err := RegisterUser(c)
+func modifyPubKey(c *gin.Context) {
+	err := ModifyPubKey(c)
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 	} else {
 		c.JSON(200, gin.H{"error": nil})
 	}
 }
-func postFindPW(c *gin.Context) {
+func modifyPW(c *gin.Context) {
+	err := ModifyPW(c)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+	} else {
+		c.JSON(200, gin.H{"error": nil})
+	}
+}
+func resetPW(c *gin.Context) {
 	err := FindUserPW(c)
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
@@ -46,7 +46,15 @@ func postFindPW(c *gin.Context) {
 		c.JSON(200, gin.H{"error": nil})
 	}
 }
-func postFindID(c *gin.Context) {
+func register(c *gin.Context) {
+	err := RegisterUser(c)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+	} else {
+		c.JSON(200, gin.H{"error": nil})
+	}
+}
+func findID(c *gin.Context) {
 	id, err := FindUserId(c)
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
@@ -62,15 +70,15 @@ func getMembers(c *gin.Context) {
 		c.JSON(200, gin.H{"error": nil, "members": posts})
 	}
 }
-func postAddMember(c *gin.Context) {
-	pid, err := AddMember(c)
+func addMember(c *gin.Context) {
+	err := AddMember(c)
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 	} else {
-		c.JSON(200, gin.H{"error": nil, "pid": pid})
+		c.JSON(200, gin.H{"error": nil})
 	}
 }
-func postPermitJoin(c *gin.Context) {
+func permitJoin(c *gin.Context) {
 	err := Permit(c)
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
@@ -78,7 +86,7 @@ func postPermitJoin(c *gin.Context) {
 		c.JSON(200, gin.H{"error": nil})
 	}
 }
-func postDenyJoin(c *gin.Context) {
+func denyJoin(c *gin.Context) {
 	err := Deny(c)
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
@@ -93,4 +101,14 @@ func getJoin(c *gin.Context) {
 	} else {
 		c.JSON(200, gin.H{"error": nil, "join": list})
 	}
+
+}
+func reissueAccess(c *gin.Context) {
+	token, err := ReissueAccess(c)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+	} else {
+		c.JSON(200, gin.H{"error": nil, "token": token})
+	}
+
 }

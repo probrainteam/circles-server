@@ -15,7 +15,7 @@ type ModifyForm struct {
 	NEW string `json:"new"`
 }
 type Member struct {
-	SID    int    `json:"student_id"`
+	SID    string `json:"student_id"`
 	MAJOR  string `json:"major"`
 	NAME   string `json:"name"`
 	YEAR   int    `json:"year"`

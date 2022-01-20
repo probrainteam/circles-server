@@ -1,11 +1,11 @@
 package token
 
 import (
+	. "circlesServer/modules/component"
 	. "circlesServer/modules/reader"
 	. "circlesServer/modules/storage"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -232,7 +232,6 @@ func checkTokenAlive(uuid string) (bool, error) {
 	}
 	defer client.Close()
 	_, err = client.Get(uuid).Result()
-	log.Println(client.Get(uuid).Result())
 	if err != nil {
 		return false, err
 	}
@@ -245,22 +244,25 @@ func ReissueAccessToken(r *http.Request) (string, error) {
 	}
 	defer client.Close()
 	// request token 파싱하여 userid get
-
-	var userid uint64 = 10000
+	userid, err := GetCircleNumRef(strings.Split(r.Header.Get("Authorization"), " ")[1])
+	if err != nil {
+		return "", err
+	}
 	td, err := CreateToken(userid)
+	if err != nil {
+		return "", err
+	}
 	at := time.Unix(td.AtExpires, 0) //converting Unix to UTC
 	now := time.Now()
 	errAccess := client.Set(td.AccessUuid, strconv.Itoa(int(userid)), at.Sub(now)).Err()
 	if errAccess != nil {
 		return "", errAccess
 	}
-
 	atClaims := jwt.MapClaims{}
 	atClaims["authorized"] = true
 	atClaims["access_uuid"] = td.AccessUuid
 	atClaims["user_id"] = userid
 	atClaims["exp"] = td.AtExpires
-	fmt.Println(atClaims)
 	att := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
 	td.AccessToken, err = att.SignedString([]byte(ACCESS_SECRET))
 	if err != nil {
