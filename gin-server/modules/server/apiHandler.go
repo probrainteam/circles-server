@@ -71,11 +71,11 @@ func getMembers(c *gin.Context) {
 	}
 }
 func addMember(c *gin.Context) {
-	pid, err := AddMember(c)
+	err := AddMember(c)
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 	} else {
-		c.JSON(200, gin.H{"error": nil, "pid": pid})
+		c.JSON(200, gin.H{"error": nil})
 	}
 }
 func permitJoin(c *gin.Context) {

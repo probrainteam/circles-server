@@ -1,19 +1,21 @@
 package api
 
 import (
+	. "circlesServer/modules/component"
 	ErrChecker "circlesServer/modules/errors"
 	. "circlesServer/modules/storage"
 	"errors"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
 func GetMemberList(c *gin.Context) ([]Member, error) {
-	num, err := getCircleNum(c)
+	num, err := GetCircleNumAcc(strings.Split(c.Request.Header.Get("Authorization"), " ")[1])
 	if err != nil {
 		return []Member{}, err
 	}
-	circle := getCircle(num)
+	circle := GetCircle(num)
 	db := DB()
 	rows, err := db.Query(`select * from ` + circle)
 	if err := ErrChecker.Check(err); err != nil {
@@ -35,46 +37,20 @@ func GetMemberList(c *gin.Context) ([]Member, error) {
 	}
 	return Members, nil
 }
-func AddMember(c *gin.Context) (int, error) {
+func AddMember(c *gin.Context) error {
 	var reqBody Member
-
 	err := c.ShouldBind(&reqBody)
 	if err != nil {
-		return 1, err
+		return err
 	}
-
-	// file, _, err := c.Request.FormFile("content")
-
-	// var pid int
 	db := DB()
-	// basePath := "http://" + getAddr()
-	// localPath := "/Users/macbook/Sites" // custom
-	// dirPath := "/Member_img/"           // custom
-	// path := basePath + dirPath + strconv.Itoa(pid+1) + `.png`
-
-	_, err = db.Exec(`insert into `)
+	num, err := GetCircleNumAcc(strings.Split(c.Request.Header.Get("Authorization"), " ")[1])
+	circle := GetCircle(num)
+	_, err = db.Exec(`insert into `+circle+` (student_id, major, name, year, email, phone, paid, status) values (?,?,?,?,?,?,?,?)`, reqBody.SID, reqBody.MAJOR, reqBody.NAME, reqBody.YEAR, reqBody.EMAIL, reqBody.PHONE, reqBody.PAID, reqBody.STATUS)
 	if err := ErrChecker.Check(err); err != nil {
-		return -1, err
+		return err
 	}
-
-	// path = localPath + dirPath + strconv.Itoa(pid+1) + `.png`
-	// dst, err := os.Create(path)
-	// if err != nil {
-	// 	return -1, err
-	// }
-	// defer dst.Close()
-
-	if err != nil {
-		return -1, err
-	}
-	// if _, err := io.Copy(dst, file); err != nil {
-	// 	return -1, err
-	// }
-	_, err = db.Exec(`your query or GORM`)
-	if err := ErrChecker.Check(err); err != nil {
-		return -1, err
-	}
-	return 0, nil
+	return nil
 }
 func Deny(c *gin.Context) error {
 	var reqBody ReplyJoinForm

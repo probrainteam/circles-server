@@ -99,7 +99,7 @@ func RegisterApiHandlers(api *gin.RouterGroup, auth *gin.RouterGroup) {
 	/*  Reply			200 -> null
 	400 -> DB Conn or Query err
 	*/
-	auth.POST("/members/add", addMember)
+	auth.POST("/member", addMember)
 
 	/*  Reply			200 -> null
 	400 -> DB Conn or Query err
@@ -116,6 +116,9 @@ func RegisterApiHandlers(api *gin.RouterGroup, auth *gin.RouterGroup) {
 	*/
 	auth.GET("/members/join", getJoin)
 
+	/*  Reply			200 -> access Token
+	400 -> refresh
+	*/
 	api.POST("/token", reissueAccess)
 
 }
