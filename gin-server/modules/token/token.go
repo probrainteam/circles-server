@@ -6,7 +6,6 @@ import (
 	. "circlesServer/modules/storage"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -233,7 +232,6 @@ func checkTokenAlive(uuid string) (bool, error) {
 	}
 	defer client.Close()
 	_, err = client.Get(uuid).Result()
-	log.Println(client.Get(uuid).Result())
 	if err != nil {
 		return false, err
 	}
@@ -260,7 +258,6 @@ func ReissueAccessToken(r *http.Request) (string, error) {
 	if errAccess != nil {
 		return "", errAccess
 	}
-
 	atClaims := jwt.MapClaims{}
 	atClaims["authorized"] = true
 	atClaims["access_uuid"] = td.AccessUuid
