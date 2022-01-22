@@ -1,6 +1,7 @@
 package api
 
 import (
+	. "circlesServer/modules/component"
 	ErrChecker "circlesServer/modules/errors"
 	. "circlesServer/modules/reader"
 	"circlesServer/modules/storage"
@@ -10,7 +11,6 @@ import (
 	"log"
 	"math/rand"
 	"net/smtp"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -180,18 +180,19 @@ func FindUserId(c *gin.Context) (string, error) {
 }
 func ModifyPW(c *gin.Context) error {
 	var reqBody ModifyForm
+	num, _ := GetCircleNum(c.Request, true)
+	circle := GetCircle(num)
 	err := c.ShouldBindJSON(&reqBody)
 	if err := ErrChecker.Check(err); err != nil {
 		return err
 	}
 	db := storage.DB()
 	var count int
-	uid := strconv.Itoa(1)
-	_ = db.QueryRow(`your query or GORM` + uid).Scan(&count)
+	_ = db.QueryRow(`select count(*) from manager where circle =` + circle + `and pw = "` + reqBody.PW + `"`).Scan(&count)
 	if count == 0 {
 		return errors.New("Invalid pw")
 	}
-	_, err = db.Exec(`your query or GORM`)
+	_, err = db.Exec(`update manager set pw = "` + reqBody.NEW + `" where circle = ` + circle)
 	if err := ErrChecker.Check(err); err != nil {
 		return err
 	}
