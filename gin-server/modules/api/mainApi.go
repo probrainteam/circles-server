@@ -5,13 +5,12 @@ import (
 	ErrChecker "circlesServer/modules/errors"
 	. "circlesServer/modules/storage"
 	"errors"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
 func GetMemberList(c *gin.Context) ([]Member, error) {
-	num, err := GetCircleNumAcc(strings.Split(c.Request.Header.Get("Authorization"), " ")[1])
+	num, err := GetCircleNum(c.Request, true)
 	if err != nil {
 		return []Member{}, err
 	}
@@ -44,7 +43,7 @@ func AddMember(c *gin.Context) error {
 		return err
 	}
 	db := DB()
-	num, err := GetCircleNumAcc(strings.Split(c.Request.Header.Get("Authorization"), " ")[1])
+	num, err := GetCircleNum(c.Request, true)
 	circle := GetCircle(num)
 	_, err = db.Exec(`insert into `+circle+` (student_id, major, name, year, email, phone, paid, status) values (?,?,?,?,?,?,?,?)`, reqBody.SID, reqBody.MAJOR, reqBody.NAME, reqBody.YEAR, reqBody.EMAIL, reqBody.PHONE, reqBody.PAID, reqBody.STATUS)
 	if err := ErrChecker.Check(err); err != nil {
