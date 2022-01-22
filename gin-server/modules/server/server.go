@@ -69,12 +69,12 @@ func RegisterApiHandlers(api *gin.RouterGroup, auth *gin.RouterGroup) {
 	/*  Reply			200 -> null
 	400 -> Modify fail
 	*/
-	api.PUT("/user/pubkey", modifyPubKey)
+	auth.PUT("/user/pubkey", modifyPubKey)
 
 	/*  Reply			200 -> null
 	400 -> Modify fail
 	*/
-	api.PUT("/user/pw", modifyPW)
+	auth.PUT("/user/pw", modifyPW)
 
 	/*  Reply			200 -> null ( mail send )
 	400 -> DB Conn or Query err
