@@ -78,6 +78,14 @@ func addMember(c *gin.Context) {
 		c.JSON(200, gin.H{"error": nil})
 	}
 }
+func deleteMember(c *gin.Context) {
+	err := DeleteMember(c)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+	} else {
+		c.JSON(200, gin.H{"error": nil})
+	}
+}
 func permitJoin(c *gin.Context) {
 	err := Permit(c)
 	if err != nil {
