@@ -121,4 +121,8 @@ func RegisterApiHandlers(api *gin.RouterGroup, auth *gin.RouterGroup) {
 	*/
 	api.POST("/token", reissueAccess)
 
+	/*  Reply			200 -> id
+	400 -> DB Conn or Query err
+	*/
+	api.POST("/members/join", joinApply)
 }

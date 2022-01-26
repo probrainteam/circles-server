@@ -112,3 +112,13 @@ func reissueAccess(c *gin.Context) {
 	}
 
 }
+
+func joinApply(c *gin.Context) {
+	err := JoinApply(c)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+	} else {
+		c.JSON(200, gin.H{"error": nil})
+	}
+
+}
