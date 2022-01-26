@@ -57,15 +57,14 @@ func Deny(c *gin.Context) error {
 	if err := ErrChecker.Check(err); err != nil {
 		return err
 	}
-	db := DB()
-	var count int
-	_ = db.QueryRow(`your query or GORM`).Scan(&count)
-	if count == 0 {
-		return errors.New("Nothing")
-	}
-	_, err = db.Exec(`your query or GORM`)
-
+	num, err := GetCircleNum(c.Request, true)
 	if err != nil {
+		return err
+	}
+	circle := GetCircle(num)
+	db := DB()
+	_, err = db.Exec(`delete from ` + circle + ` where student_id = "` + reqBody.SID + `"`)
+	if err := ErrChecker.Check(err); err != nil {
 		return err
 	}
 	return nil
@@ -76,43 +75,58 @@ func Permit(c *gin.Context) error {
 	if err := ErrChecker.Check(err); err != nil {
 		return err
 	}
-	db := DB()
-	var count int
-	_ = db.QueryRow(`your query or GORM`)
-	if count == 0 {
-		return errors.New("Nothing")
-	}
-	_, err = db.Exec(`your query or GORM`)
-
+	num, err := GetCircleNum(c.Request, true)
 	if err != nil {
+		return err
+	}
+	circle := GetCircle(num)
+	db := DB()
+	_, err = db.Exec(`update ` + circle + ` set status = 1 where student_id = "` + reqBody.SID + `"`)
+	if err := ErrChecker.Check(err); err != nil {
 		return err
 	}
 	return nil
 }
 func Join(c *gin.Context) ([]Member, error) {
-	var reqBody Member
-	err := c.ShouldBindJSON(&reqBody)
-	if err := ErrChecker.Check(err); err != nil {
-		return []Member{}, err
-	}
-	db := DB()
-	_, err = db.Exec(`your query or GORM`)
+	num, err := GetCircleNum(c.Request, true)
 	if err != nil {
 		return []Member{}, err
 	}
-	list := make([]Member, 0)
-	return list, nil
+	circle := GetCircle(num)
+
+	db := DB()
+	rows, err := db.Query(`select * from ` + circle + `where status = 0`)
+	if err := ErrChecker.Check(err); err != nil {
+		return []Member{}, err
+	}
+	defer rows.Close()
+	Joins := make([]Member, 0)
+	var mem Member
+	for rows.Next() {
+		err := rows.Scan(&mem.SID, &mem.MAJOR, &mem.NAME, &mem.YEAR,
+			&mem.EMAIL, &mem.PHONE, &mem.PAID, &mem.STATUS)
+		if err := ErrChecker.Check(err); err != nil {
+			return []Member{}, err
+		}
+		Joins = append(Joins, mem)
+	}
+	if len(Joins) == 0 {
+		return []Member{}, errors.New("nothing to show")
+	}
+	return Joins, nil
 }
-func GetNumMember(c *gin.Context) (int, error) {
-	var reqBody Member
-	err := c.ShouldBindJSON(&reqBody)
-	if err := ErrChecker.Check(err); err != nil {
-		return -1, err
-	}
-	db := DB()
-	_, err = db.Exec(`your query or GORM`)
+func JoinApply(c *gin.Context) error {
+	var reqBody JoinForm
+	err := c.ShouldBind(&reqBody)
 	if err != nil {
-		return -1, err
+		return err
 	}
-	return -1, nil
+	circle := GetCircle(uint64(reqBody.CIRCLE))
+	db := DB()
+	_, err = db.Exec(`insert into `+circle+` (student_id, major, name, year, email, phone, paid, status) values (?,?,?,?,?,?,?,?)`, reqBody.SID, reqBody.MAJOR, reqBody.NAME, reqBody.YEAR, reqBody.EMAIL, reqBody.PHONE, 0, 0)
+	if err := ErrChecker.Check(err); err != nil {
+		return err
+	}
+
+	return nil
 }

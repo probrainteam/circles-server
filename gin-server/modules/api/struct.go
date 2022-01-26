@@ -24,8 +24,17 @@ type Member struct {
 	PAID   bool   `json:"paid"`
 	STATUS int    `json:"status"`
 }
+type JoinForm struct {
+	CIRCLE int    `json:"circle"`
+	SID    string `json:"student_id"`
+	MAJOR  string `json:"major"`
+	NAME   string `json:"name"`
+	YEAR   int    `json:"year"`
+	EMAIL  string `json:"email"`
+	PHONE  string `json:"phone"`
+}
 type ReplyJoinForm struct {
-	SID int `json:"sid"`
+	SID string `json:"sid"`
 }
 type Announce struct {
 	TITLE   string `json:"title"`
