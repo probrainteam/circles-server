@@ -1,11 +1,12 @@
 package token
 
 import (
+	. "circlesServer/const"
+	. "circlesServer/modules/component"
 	. "circlesServer/modules/reader"
 	. "circlesServer/modules/storage"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -33,10 +34,12 @@ type RefreshDetails struct {
 	UserId      uint64
 }
 
-var client *redis.Client
-
-var ACCESS_SECRET string
-var REFRESH_SECRET string
+var (
+	client         *redis.Client
+	ACCESS_SECRET  string
+	REFRESH_SECRET string
+	// token payload key
+)
 
 func init() {
 	ACCESS_SECRET = GetConfig(`token.ACCESS_SECRET`)
@@ -155,10 +158,10 @@ func CreateToken(userid uint64) (*TokenDetails, error) {
 	var err error
 	//Creating Access Token
 	atClaims := jwt.MapClaims{}
-	atClaims["authorized"] = true
-	atClaims["access_uuid"] = td.AccessUuid
-	atClaims["user_id"] = userid
-	atClaims["exp"] = td.AtExpires
+	atClaims[AUTH] = true
+	atClaims[ACCESSUUID] = td.AccessUuid
+	atClaims[USERID] = userid
+	atClaims[EXPIRE] = td.AtExpires
 	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
 	td.AccessToken, err = at.SignedString([]byte(ACCESS_SECRET))
 	if err != nil {
@@ -166,9 +169,9 @@ func CreateToken(userid uint64) (*TokenDetails, error) {
 	}
 	//Creating Refresh Token
 	rtClaims := jwt.MapClaims{}
-	rtClaims["refresh_uuid"] = td.RefreshUuid
-	rtClaims["user_id"] = userid
-	rtClaims["exp"] = td.RtExpires
+	rtClaims[REFRESHUUID] = td.RefreshUuid
+	rtClaims[USERID] = userid
+	rtClaims[EXPIRE] = td.RtExpires
 	rt := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
 	td.RefreshToken, err = rt.SignedString([]byte(REFRESH_SECRET))
 	if err != nil {
@@ -207,7 +210,6 @@ func DeleteAuth(accessUuid string, refreshUuid string) (int64, error) {
 	}
 	return deleted, nil
 }
-
 func CheckTokenAuth(r *http.Request) (bool, error) { // access token의 만료 여부 체크
 	au, _, err := ExtractBothTokenMetadata(r)
 	if err != nil {
@@ -221,10 +223,6 @@ func CheckTokenAuth(r *http.Request) (bool, error) { // access token의 만료 �
 	// CheckAccessToken() 호출 : 추출한 AccessToken의 만료 여부를 검사
 	return valid, nil
 }
-
-// 후 CheckRefreshToken() 호출 : RefreshToken의 만료 여부를 검사
-// Refresh 만료   -> 강제 로그아웃 후 재로그인 요청
-// Refresh 만료 X -> ReissueAccessToken() : AccessToken 재발급
 func checkTokenAlive(uuid string) (bool, error) {
 	client, err := Redis()
 	if err != nil {
@@ -232,7 +230,6 @@ func checkTokenAlive(uuid string) (bool, error) {
 	}
 	defer client.Close()
 	_, err = client.Get(uuid).Result()
-	log.Println(client.Get(uuid).Result())
 	if err != nil {
 		return false, err
 	}
@@ -245,22 +242,33 @@ func ReissueAccessToken(r *http.Request) (string, error) {
 	}
 	defer client.Close()
 	// request token 파싱하여 userid get
-
-	var userid uint64 = 10000
+	refresh_uuid, err := GetUuid(r, false)
+	valid, err := checkTokenAlive(refresh_uuid)
+	if err != nil {
+		return "", err
+	}
+	if !valid {
+		return "", errors.New("refresh_token is expired")
+	}
+	userid, err := GetCircleNum(r, false)
+	if err != nil {
+		return "", err
+	}
 	td, err := CreateToken(userid)
+	if err != nil {
+		return "", err
+	}
 	at := time.Unix(td.AtExpires, 0) //converting Unix to UTC
 	now := time.Now()
 	errAccess := client.Set(td.AccessUuid, strconv.Itoa(int(userid)), at.Sub(now)).Err()
 	if errAccess != nil {
 		return "", errAccess
 	}
-
 	atClaims := jwt.MapClaims{}
-	atClaims["authorized"] = true
-	atClaims["access_uuid"] = td.AccessUuid
-	atClaims["user_id"] = userid
-	atClaims["exp"] = td.AtExpires
-	fmt.Println(atClaims)
+	atClaims[AUTH] = true
+	atClaims[ACCESSUUID] = td.AccessUuid
+	atClaims[USERID] = userid
+	atClaims[EXPIRE] = td.AtExpires
 	att := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
 	td.AccessToken, err = att.SignedString([]byte(ACCESS_SECRET))
 	if err != nil {
