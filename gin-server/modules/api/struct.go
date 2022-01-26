@@ -34,8 +34,7 @@ type JoinForm struct {
 	PHONE  string `json:"phone"`
 }
 type ReplyJoinForm struct {
-	CIRCLE int    `json:"circle"`
-	SID    string `json:"sid"`
+	SID string `json:"sid"`
 }
 type Announce struct {
 	TITLE   string `json:"title"`

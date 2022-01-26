@@ -57,7 +57,11 @@ func Deny(c *gin.Context) error {
 	if err := ErrChecker.Check(err); err != nil {
 		return err
 	}
-	circle := GetCircle(uint64(reqBody.CIRCLE))
+	num, err := GetCircleNum(c.Request, true)
+	if err != nil {
+		return err
+	}
+	circle := GetCircle(num)
 	db := DB()
 	_, err = db.Exec(`delete from ` + circle + ` where student_id = "` + reqBody.SID + `"`)
 	if err := ErrChecker.Check(err); err != nil {
@@ -71,7 +75,11 @@ func Permit(c *gin.Context) error {
 	if err := ErrChecker.Check(err); err != nil {
 		return err
 	}
-	circle := GetCircle(uint64(reqBody.CIRCLE))
+	num, err := GetCircleNum(c.Request, true)
+	if err != nil {
+		return err
+	}
+	circle := GetCircle(num)
 	db := DB()
 	_, err = db.Exec(`update ` + circle + ` set status = 1 where student_id = "` + reqBody.SID + `"`)
 	if err := ErrChecker.Check(err); err != nil {
@@ -85,6 +93,7 @@ func Join(c *gin.Context) ([]Member, error) {
 		return []Member{}, err
 	}
 	circle := GetCircle(num)
+
 	db := DB()
 	rows, err := db.Query(`select * from ` + circle + `where status = 0`)
 	if err := ErrChecker.Check(err); err != nil {
