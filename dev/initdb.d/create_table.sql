@@ -1,10 +1,10 @@
 CREATE TABLE manager (
     `email`   VARCHAR(30)  NOT NULL,
     `pw`      BLOB         NOT NULL,
-    `circle`  INT          NOT NULL,
+    `circle`  INT          default 123,
     `pubkey`  BLOB         NOT NULL,
     `auth`    BOOL         default false,
-    PRIMARY KEY (circle)
+    PRIMARY KEY (email)
 );
 CREATE TABLE probrain (
     `student_id` VARCHAR(12)  NOT NULL,
