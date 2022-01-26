@@ -10,11 +10,7 @@ import (
 )
 
 func GetMemberList(c *gin.Context) ([]Member, error) {
-	num, err := GetCircleNum(c.Request, true)
-	if err != nil {
-		return []Member{}, err
-	}
-	circle := GetCircle(num)
+	circle, _ := c.Keys["circle"].(string)
 	db := DB()
 	rows, err := db.Query(`select * from ` + circle)
 	if err := ErrChecker.Check(err); err != nil {
@@ -43,9 +39,18 @@ func AddMember(c *gin.Context) error {
 		return err
 	}
 	db := DB()
-	num, err := GetCircleNum(c.Request, true)
-	circle := GetCircle(num)
+	circle, _ := c.Keys["circle"].(string)
 	_, err = db.Exec(`insert into `+circle+` (student_id, major, name, year, email, phone, paid, status) values (?,?,?,?,?,?,?,?)`, reqBody.SID, reqBody.MAJOR, reqBody.NAME, reqBody.YEAR, reqBody.EMAIL, reqBody.PHONE, reqBody.PAID, reqBody.STATUS)
+	if err := ErrChecker.Check(err); err != nil {
+		return err
+	}
+	return nil
+}
+func DeleteMember(c *gin.Context) error {
+	sid := c.Params.ByName("sid")
+	circle, _ := c.Keys["circle"].(string)
+	db := DB()
+	_, err := db.Exec(`delete ` + circle + ` where student_id = "` + sid + `"`)
 	if err := ErrChecker.Check(err); err != nil {
 		return err
 	}
@@ -57,11 +62,7 @@ func Deny(c *gin.Context) error {
 	if err := ErrChecker.Check(err); err != nil {
 		return err
 	}
-	num, err := GetCircleNum(c.Request, true)
-	if err != nil {
-		return err
-	}
-	circle := GetCircle(num)
+	circle, _ := c.Keys["circle"].(string)
 	db := DB()
 	_, err = db.Exec(`delete from ` + circle + ` where student_id = "` + reqBody.SID + `"`)
 	if err := ErrChecker.Check(err); err != nil {
@@ -75,11 +76,7 @@ func Permit(c *gin.Context) error {
 	if err := ErrChecker.Check(err); err != nil {
 		return err
 	}
-	num, err := GetCircleNum(c.Request, true)
-	if err != nil {
-		return err
-	}
-	circle := GetCircle(num)
+	circle, _ := c.Keys["circle"].(string)
 	db := DB()
 	_, err = db.Exec(`update ` + circle + ` set status = 1 where student_id = "` + reqBody.SID + `"`)
 	if err := ErrChecker.Check(err); err != nil {
@@ -88,12 +85,7 @@ func Permit(c *gin.Context) error {
 	return nil
 }
 func Join(c *gin.Context) ([]Member, error) {
-	num, err := GetCircleNum(c.Request, true)
-	if err != nil {
-		return []Member{}, err
-	}
-	circle := GetCircle(num)
-
+	circle, _ := c.Keys["circle"].(string)
 	db := DB()
 	rows, err := db.Query(`select * from ` + circle + `where status = 0`)
 	if err := ErrChecker.Check(err); err != nil {

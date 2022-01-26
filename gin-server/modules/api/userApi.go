@@ -1,7 +1,6 @@
 package api
 
 import (
-	. "circlesServer/modules/component"
 	ErrChecker "circlesServer/modules/errors"
 	. "circlesServer/modules/reader"
 	"circlesServer/modules/storage"
@@ -74,6 +73,7 @@ func LoginUser(c *gin.Context) (map[string]string, error) {
 	var count int
 	var circle uint64
 	row := db.QueryRow(`select count(*), pw, circle from manager where email = '` + reqBody.ID + `'`)
+	fmt.Println("circle num is ", circle)
 	err = row.Scan(&count, &pw, &circle)
 	if err := ErrChecker.Check(err); err != nil {
 		return map[string]string{}, errors.New("ID")
@@ -180,8 +180,7 @@ func FindUserId(c *gin.Context) (string, error) {
 }
 func ModifyPW(c *gin.Context) error {
 	var reqBody ModifyForm
-	num, _ := GetCircleNum(c.Request, true)
-	circle := GetCircle(num)
+	circle, _ := c.Keys["circle"].(string)
 	err := c.ShouldBindJSON(&reqBody)
 	if err := ErrChecker.Check(err); err != nil {
 		return err
