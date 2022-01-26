@@ -85,13 +85,6 @@ func Join(c *gin.Context) ([]Member, error) {
 		return []Member{}, err
 	}
 	circle := GetCircle(num)
-
-	var reqBody Member
-	err = c.ShouldBindJSON(&reqBody)
-	if err := ErrChecker.Check(err); err != nil {
-		return []Member{}, err
-	}
-
 	db := DB()
 	rows, err := db.Query(`select * from ` + circle + `where status = 0`)
 	if err := ErrChecker.Check(err); err != nil {
