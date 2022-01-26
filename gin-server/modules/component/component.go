@@ -4,11 +4,9 @@ import (
 	. "circlesServer/const"
 	. "circlesServer/modules/reader"
 	"errors"
-	"fmt"
 	"log"
 	"net"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
@@ -31,10 +29,7 @@ func GetAddr() string {
 func GetCircleNum(r *http.Request, access bool) (uint64, error) {
 	encToken := strings.Split(r.Header.Get("Authorization"), " ")[1]
 	claims := ReadToken(encToken, access)
-	num, err := strconv.ParseUint(fmt.Sprintf("%.f", claims["user_id"]), 10, 64)
-	if err != nil {
-		return 10, err
-	}
+	num, _ := claims[USERID].(uint64)
 	if num > 7 {
 		return 10, errors.New("cicle is not matched yet")
 	}
