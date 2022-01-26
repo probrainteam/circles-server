@@ -32,11 +32,10 @@ type JoinForm struct {
 	YEAR   int    `json:"year"`
 	EMAIL  string `json:"email"`
 	PHONE  string `json:"phone"`
-	STATUS int    `json:"status"`
 }
 type ReplyJoinForm struct {
-	CIRCLE int `json:"circle"`
-	SID    int `json:"sid"`
+	CIRCLE int    `json:"circle"`
+	SID    string `json:"sid"`
 }
 type Announce struct {
 	TITLE   string `json:"title"`
