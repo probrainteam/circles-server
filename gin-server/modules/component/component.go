@@ -13,7 +13,7 @@ import (
 )
 
 func GetCircle(num uint64) string {
-	return []string{"probrain", "grow", "argos", "adm2n", "ana", "motion", "spg", "pai"}[num]
+	return []string{"probrain", "grow", "argos", "adm2n", "ana", "motion", "spg"}[num]
 }
 
 func GetAddr() string {
@@ -30,7 +30,7 @@ func GetCircleNum(r *http.Request, access bool) (uint64, error) {
 	encToken := strings.Split(r.Header.Get("Authorization"), " ")[1]
 	claims := ReadToken(encToken, access)
 	num, _ := claims[USERID].(uint64)
-	if num > 7 {
+	if num > 6 {
 		return 10, errors.New("cicle is not matched yet")
 	}
 	return num, nil
