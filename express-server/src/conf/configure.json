@@ -1,0 +1,30 @@
+{
+    "main":{
+        "database":{
+            "framework":"mysql",
+            "uri":"http://localhost",
+            "host": "localhost",
+            "port": "18000",
+            "user": "root",
+            "password": "qwer1234",
+            "database": "test"
+        },
+        "uri":"http://localhost",
+        "host":"localhost",
+        "port":"13000"
+    },
+    "develop":{
+        "database":{
+            "framework":"mysql",
+            "uri":"http://localhost",
+            "host": "localhost",
+            "port":"18000",
+            "user": "root",
+            "password": "qwer1234",
+            "database": "test"
+        },
+        "uri":"http://localhost",
+        "host":"localhost",
+        "port":"13000"
+    }
+}

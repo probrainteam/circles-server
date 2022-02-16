@@ -1,0 +1,63 @@
+version: '3.8'
+services:
+
+  db: 
+    image: mysql:5.7 
+    restart: always
+    command: --lower_case_table_names=1
+    container_name: Probrain_db
+    ports:
+      - "${MYSQL_PORT}:3306" 
+    env_file: .env
+    build: ./
+    environment:
+      - TZ=Asia/Seoul
+    volumes:
+      - ./db/conf.d:/etc/mysql/conf.d
+      - ./db/data:/var/lib/mysql
+      - ./db/initdb.d:/docker-entrypoint-initdb.d
+  dev_db: 
+    image: mysql:5.7 
+    restart: always
+    command: --lower_case_table_names=1
+    container_name: dev_db
+    ports:
+      - "${MYSQL_PORT}:3306" 
+    env_file: .env
+    build: ./
+    environment:
+      - TZ=Asia/Seoul
+    volumes:
+      - ./dev/conf.d:/etc/mysql/conf.d
+      - ./dev/data:/var/lib/mysql
+      - ./dev/initdb.d:/docker-entrypoint-initdb.d      
+
+  redis:
+      image: redis:alpine
+      command: redis-server --port 6379
+      container_name: Probrain_redis
+      hostname: redis_boot
+      labels:
+        - "name=redis"
+        - "mode=standalone"
+      ports:
+        - ${REDIS_PORT}:6379
+
+# version: "3.8" # 파일 규격 버전
+# services: # 이 항목 밑에 실행하려는 컨테이너 들을 정의 ( 컴포즈에서 컨테이너 : 서비스 )
+#   dev-mysql-service-db: # 서비스 명
+#     image: mysql:5.7 # 사용할 이미지
+#     restart: always
+#     container_name: banchelin-mysql-dev # 컨테이너 이름 설정
+#     ports:
+#       - "3306:3306" # 접근 포트 설정 (컨테이너 외부:컨테이너 내부)  <- 컨테이너 내부는 무조건 3306
+#     environment: # -e 옵션
+#       - MYSQL_DATABASE=bang
+#       - MYSQL_ROOT_PASSWORD=qwer1234  # MYSQL 패스워드 설정 옵션
+#       - TZ=Asia/Seoul
+#     command: # 명령어 실행
+#       - --character-set-server=utf8mb4
+#       - --collation-server=utf8mb4_unicode_ci
+#       - --lower_case_table_names=1
+#     volumes:
+#       - /Users/Shared/data/banchelin-mysql-dev:/var/lib/mysql # -v 옵션 (다렉토리 마운트 설정)
