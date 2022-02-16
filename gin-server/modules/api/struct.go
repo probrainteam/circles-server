@@ -12,7 +12,7 @@ type LoginForm struct {
 }
 type ModifyForm struct {
 	PW  string `json:"pw"`
-	NEW string `json:"new"`
+	NEW string `json:"modPw"`
 }
 type Member struct {
 	SID    string `json:"student_id"`
