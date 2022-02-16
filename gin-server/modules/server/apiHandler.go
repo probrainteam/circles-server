@@ -7,11 +7,11 @@ import (
 )
 
 func login(c *gin.Context) {
-	token, err := LoginUser(c)
+	accessToken, circle, err := LoginUser(c)
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 	} else {
-		c.JSON(200, gin.H{"error": nil, "token": token})
+		c.JSON(200, gin.H{"error": nil, "accessToken": accessToken, "circle": circle})
 	}
 }
 func logout(c *gin.Context) {
