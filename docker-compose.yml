@@ -20,7 +20,7 @@ services:
     image: mysql:5.7 
     restart: always
     command: --lower_case_table_names=1
-    container_name: dev_db
+    container_name: gin_dev_db
     ports:
       - "${MYSQL_PORT}:3306" 
     env_file: .env
@@ -35,7 +35,7 @@ services:
   redis:
       image: redis:alpine
       command: redis-server --port 6379
-      container_name: Probrain_redis
+      container_name: Probrain_gin_redis
       hostname: redis_boot
       labels:
         - "name=redis"
