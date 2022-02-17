@@ -1,7 +1,6 @@
 package api
 
 import (
-	. "circlesServer/modules/component"
 	ErrChecker "circlesServer/modules/errors"
 	. "circlesServer/modules/reader"
 	"circlesServer/modules/storage"
@@ -63,37 +62,35 @@ func RegisterUser(c *gin.Context) error {
 	return nil
 }
 
-func LoginUser(c *gin.Context) (map[string]string, error) {
+func LoginUser(c *gin.Context) (string, uint64, error) {
 	var reqBody LoginForm
 	err := c.ShouldBindJSON(&reqBody)
 	if err := ErrChecker.Check(err); err != nil {
-		return map[string]string{}, err
+		return "", 0, err
 	}
 	db := storage.DB()
 	var pw string
 	var count int
 	var circle uint64
 	row := db.QueryRow(`select count(*), pw, circle from manager where email = '` + reqBody.ID + `'`)
+	fmt.Println("circle num is ", circle)
 	err = row.Scan(&count, &pw, &circle)
 	if err := ErrChecker.Check(err); err != nil {
-		return map[string]string{}, errors.New("ID")
+		return "", 0, errors.New("ID")
 	}
 	if reqBody.PW != pw { // PW 가 다르면 PW 가 다르다는 오류 반환
-		return map[string]string{}, errors.New("PW")
+		return "", 0, errors.New("PW")
 	}
 	ts, err := token.CreateToken(circle)
 	if err := ErrChecker.Check(err); err != nil {
-		return map[string]string{}, err
+		return "", 0, err
 	}
 	err = token.CreateAuth(circle, ts) // Redis 토큰 메타데이터 저장
 	if err := ErrChecker.Check(err); err != nil {
-		return map[string]string{}, err
+		return "", 0, err
 	}
-	tokens := map[string]string{
-		"access_token":  ts.AccessToken,
-		"refresh_token": ts.RefreshToken,
-	}
-	return tokens, nil
+	c.SetCookie("refreshToken", ts.RefreshToken, 60*60*24*7, "/", "", true, true)
+	return ts.AccessToken, circle, nil
 }
 func LogoutUser(c *gin.Context) error {
 	// request header 에 담긴 access & refresh token을 검증 후 redis 에서 삭제
@@ -180,8 +177,7 @@ func FindUserId(c *gin.Context) (string, error) {
 }
 func ModifyPW(c *gin.Context) error {
 	var reqBody ModifyForm
-	num, _ := GetCircleNum(c.Request, true)
-	circle := GetCircle(num)
+	circle, _ := c.Keys["circle"].(string)
 	err := c.ShouldBindJSON(&reqBody)
 	if err := ErrChecker.Check(err); err != nil {
 		return err
