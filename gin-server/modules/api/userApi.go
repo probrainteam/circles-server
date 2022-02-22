@@ -1,6 +1,7 @@
 package api
 
 import (
+	"circlesServer/modules/component"
 	ErrChecker "circlesServer/modules/errors"
 	. "circlesServer/modules/reader"
 	"circlesServer/modules/storage"
@@ -62,35 +63,34 @@ func RegisterUser(c *gin.Context) error {
 	return nil
 }
 
-func LoginUser(c *gin.Context) (string, uint64, error) {
+func LoginUser(c *gin.Context) (string, string, error) {
 	var reqBody LoginForm
 	err := c.ShouldBindJSON(&reqBody)
 	if err := ErrChecker.Check(err); err != nil {
-		return "", 0, err
+		return "", "", err
 	}
 	db := storage.DB()
 	var pw string
 	var count int
 	var circle uint64
 	row := db.QueryRow(`select count(*), pw, circle from manager where email = '` + reqBody.ID + `'`)
-	fmt.Println("circle num is ", circle)
 	err = row.Scan(&count, &pw, &circle)
 	if err := ErrChecker.Check(err); err != nil {
-		return "", 0, errors.New("ID")
+		return "", "", errors.New("ID")
 	}
 	if reqBody.PW != pw { // PW 가 다르면 PW 가 다르다는 오류 반환
-		return "", 0, errors.New("PW")
+		return "", "", errors.New("PW")
 	}
 	ts, err := token.CreateToken(circle)
 	if err := ErrChecker.Check(err); err != nil {
-		return "", 0, err
+		return "", "", err
 	}
 	err = token.CreateAuth(circle, ts) // Redis 토큰 메타데이터 저장
 	if err := ErrChecker.Check(err); err != nil {
-		return "", 0, err
+		return "", "", err
 	}
 	c.SetCookie("refreshToken", ts.RefreshToken, 60*60*24*7, "/", "", true, true)
-	return ts.AccessToken, circle, nil
+	return ts.AccessToken, component.GetCircle(circle), nil
 }
 func LogoutUser(c *gin.Context) error {
 	// request header 에 담긴 access & refresh token을 검증 후 redis 에서 삭제
